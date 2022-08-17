@@ -1,0 +1,15 @@
+INSERT INTO APP001.APT001_USU 
+(
+  USU_CPF,
+  USU_NOM,
+  USU_STS,
+  USU_CRT_AT,
+  USU_UPD_AT
+)
+VALUES (
+  :USU_CPF,
+  :USU_NOM,
+  :USU_STS,
+  SYSDATE,
+  null
+)

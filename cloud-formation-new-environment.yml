@@ -1,0 +1,278 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Cloudformation description
+Globals:
+  Function:
+    Timeout: 15
+Parameters:
+  ApplicationBaseName:
+    Type: String
+    Default: digital-core
+  Environment:
+    Type: String
+    Default: hml
+    AllowedValues:
+      - prd
+      - hml
+      - dev
+Mappings:
+  Environment:
+    Name:
+      prd: production
+      hml: homologation
+      dev: development
+    NewRelicLicenseKey:
+      prd: x
+      hml: x
+      dev: x
+    ElasticApmUrl:
+      prd: https://x.apm.us-east-1.aws.cloud.es.io:443
+      hml: https://x.apm.us-east-1.aws.cloud.es.io:443
+      dev: https://x.apm.us-east-1.aws.cloud.es.io:443
+    ElasticApmSecret:
+      prd: 1x
+      hml: 1x
+      dev: 1x
+    AutoScalingMinCapacity:
+      prd: 8
+      hml: 2
+      dev: 2
+    AutoScalingMaxCapacity:
+      prd: 10
+      hml: 2
+      dev: 2
+    AutoScalingInCooldown:
+      prd: 10
+      hml: 0
+      dev: 0
+    AutoScalingOutCooldown:
+      prd: 10
+      hml: 0
+      dev: 0
+    DynamicScalingInSuspended:
+      prd: false
+      hml: true
+      dev: true
+    DynamicScalingOutSuspended:
+      prd: false
+      hml: true
+      dev: true
+    ScheduledScalingSuspended:
+      prd: false
+      hml: true
+      dev: true
+  VpcSubnet:
+    sa-east-1:
+      prd:
+        - subnet-0x
+        - subnet-0x
+    us-east-2:
+      hml:
+        - subnet-0x
+        - subnet-0x
+      dev:
+        - subnet-0x
+        - subnet-0x
+  VpcSecurityGroup:
+    sa-east-1:
+      prd:
+        - sg-0x
+    us-east-2:
+      hml:
+        - sg-0x
+      dev:
+        - sg-0x
+  DbSubnetGroup:
+    us-east-2:
+      hml: subgroup-hml-vpceks
+      dev: subgroup-hml-vpceks
+    sa-east-1:
+      prd: subgroup-prd-vpceks
+  DbSecurityGroup:
+    us-east-2:
+      hml:
+        - sg-x
+      dev:
+        - sg-x
+    sa-east-1:
+      prd:
+        - sg-x
+  VpcEndpointApiGateway:
+    us-east-2:
+      hml:
+        - vpce-0x
+        - vpce-0x
+      dev:
+        - vpce-0x
+        - vpce-0x
+    sa-east-1:
+      prd:
+        - vpce-0x
+        - vpce-0x
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref ApplicationBaseName
+      Scheme: internal
+      Type: network
+      Subnets: !FindInMap [VpcSubnet, !Ref "AWS::Region", !Ref Environment]
+      Tags:
+        - Key: Project
+          Value: !Ref ApplicationBaseName
+        - Key: Environment
+          Value: !Ref Environment
+  # VpcLink:
+  #   Type: AWS::ApiGateway::VpcLink
+  #   Properties:
+  #     Name: !Join ["-", ["nlb", !Ref ApplicationBaseName]]
+  #     TargetArns:
+  #       - !Ref LoadBalancer
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Ref ApplicationBaseName
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+        VpcEndpointIds:
+          !FindInMap [
+            VpcEndpointApiGateway,
+            !Ref "AWS::Region",
+            !Ref Environment,
+          ]
+      Parameters:
+        Key: Value
+      Policy:
+        {
+          "Version": "2012-10-17",
+          "Statement":
+            [
+              {
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "execute-api:Invoke",
+                "Resource":
+                  !Join [
+                    "",
+                    [
+                      "arn:aws:execute-api:",
+                      !Ref "AWS::Region",
+                      ":585074645714:*/*/*",
+                    ],
+                  ],
+              },
+              {
+                "Effect": "Deny",
+                "Principal": "*",
+                "Action": "execute-api:Invoke",
+                "Resource":
+                  !Join [
+                    "",
+                    [
+                      "arn:aws:execute-api:",
+                      !Ref "AWS::Region",
+                      ":585074645714:*/*/*",
+                    ],
+                  ],
+                "Condition":
+                  {
+                    "StringNotEquals":
+                      {
+                        "aws:SourceVpce":
+                          !FindInMap [
+                            VpcEndpointApiGateway,
+                            !Ref "AWS::Region",
+                            !Ref Environment,
+                          ],
+                      },
+                  },
+              },
+            ],
+        }
+      Tags:
+        - Key: Project
+          Value: !Ref ApplicationBaseName
+        - Key: Environment
+          Value: !Ref Environment
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ApiGatewayMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+  ApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: !Ref Environment
+      RestApiId: !Ref ApiGateway
+      DeploymentId: !Ref ApiGatewayDeployment
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: "health"
+      RestApiId: !Ref ApiGateway
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      Integration:
+        Type: MOCK
+      ResourceId: !GetAtt ApiGatewayResource.ResourceId
+      RestApiId: !Ref ApiGateway
+      AuthorizationType: NONE
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Join ["-", [!Ref ApplicationBaseName, !Ref Environment]]
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ApplicationBaseName
+        - Key: Environment
+          Value: !Ref Environment
+Outputs:
+  ClusterName:
+    Description: Name of newly created Cluster
+    Value: !Ref Cluster
+    Export:
+      Name:
+        "Fn::Sub": "${AWS::StackName}-ClusterName"
+  ApiGatewayId:
+    Description: Id of newly created ApiGateway
+    Value: !Ref ApiGateway
+    #Value: !Ref ApiGatewayId
+    Export:
+      Name:
+        "Fn::Sub": "${AWS::StackName}-ApiGatewayId"
+  ApiGatewayRootResourceId:
+    Description: Id of root resource of newly created ApiGateway
+    Value: !GetAtt ApiGateway.RootResourceId
+    #Value: !Ref ApiGatewayRootResourceId
+    Export:
+      Name:
+        "Fn::Sub": "${AWS::StackName}-ApiGatewayRootResourceId"
+  LoadBalancerArn:
+    Description: Arn of created LoadBalancer
+    Value: !Ref LoadBalancer
+    #Value: !Ref LoadBalancerArn
+    Export:
+      Name:
+        "Fn::Sub": "${AWS::StackName}-LoadBalancerArn"
+  LoadBalancerDnsUri:
+    Description: DNS Uri of LoadBalancer
+    Value: !GetAtt LoadBalancer.DNSName
+    #Value: !Ref LoadBalancerDnsUri
+    Export:
+      Name:
+        "Fn::Sub": "${AWS::StackName}-LoadBalancerDnsUri"
+  # VpcLinkId:
+  #   Description: VPC Lind Id of LoadBalancer
+  #   Value: !Ref VpcLink
+  #   #Value: !Ref VpcLinkId
+  #   Export:
+  #     Name:
+  #       "Fn::Sub": "${AWS::StackName}-VpcLinkId"

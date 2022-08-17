@@ -1,0 +1,61 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@global": [
+        "src/global"
+      ],
+      "@global/*": [
+        "src/global/*"
+      ],
+      "@modules": [
+        "src/modules"
+      ],
+      "@modules/*": [
+        "src/modules/*"
+      ],
+      "@common": [
+        "src/common"
+      ],
+      "@common/*": [
+        "src/common/*"
+      ],
+      "@shared": [
+        "src/shared"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@infra": [
+        "src/infra"
+      ],
+      "@infra/*": [
+        "src/infra/*"
+      ],
+      "@app/marvel": [
+        "libs/marvel/src"
+      ],
+      "@app/marvel/*": [
+        "libs/marvel/src/*"
+      ]
+    }
+  }
+}

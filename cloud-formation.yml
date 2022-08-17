@@ -1,0 +1,303 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Cloudformation description
+Globals:
+  Function:
+    Timeout: 15
+Parameters:
+  ApplicationBaseName:
+    Type: String
+    Default: base-name
+  Environment:
+    Type: String
+    Default: hml
+    AllowedValues:
+      - prd
+      - hml
+      - dev
+  ServiceName:
+    Type: String
+  ServicePort:
+    Type: Number
+    Default: 3000
+  ListenerPort:
+    Type: Number
+  ImageName:
+    Type: String
+  StackNameNlbAndCluster:
+    Type: String
+Mappings:
+  Environment:
+    Name:
+      prd: production
+      hml: homologation
+      dev: development
+    NewRelicLicenseKey:
+      prd: 0x
+      hml: 0x
+      dev: 0x
+    ElasticApmUrl:
+      prd: https://x.apm.us-east-1.aws.cloud.es.io:443
+      hml: https://x.apm.us-east-1.aws.cloud.es.io:443
+      dev: https://x.apm.us-east-1.aws.cloud.es.io:443
+    ElasticApmSecret:
+      prd: 1x
+      hml: 1x
+      dev: 1x
+    AutoScalingMinCapacity:
+      prd: 8
+      hml: 2
+      dev: 2
+    AutoScalingMaxCapacity:
+      prd: 10
+      hml: 2
+      dev: 2
+    AutoScalingInCooldown:
+      prd: 10
+      hml: 0
+      dev: 0
+    AutoScalingOutCooldown:
+      prd: 10
+      hml: 0
+      dev: 0
+    DynamicScalingInSuspended:
+      prd: false
+      hml: true
+      dev: true
+    DynamicScalingOutSuspended:
+      prd: false
+      hml: true
+      dev: true
+    ScheduledScalingSuspended:
+      prd: false
+      hml: true
+      dev: true
+  VpcId:
+    sa-east-1:
+      prd: vpc-0x
+    us-east-2:
+      hml: vpc-0x
+      dev: vpc-0x
+  VpcSubnet:
+    sa-east-1:
+      prd:
+        - subnet-0x
+        - subnet-0x
+    us-east-2:
+      hml:
+        - subnet-0x
+        - subnet-0x
+      dev:
+        - subnet-0x
+        - subnet-0x
+  VpcSecurityGroup:
+    sa-east-1:
+      prd:
+        - sg-0x
+    us-east-2:
+      hml:
+        - sg-0x
+      dev:
+        - sg-0x
+Resources:
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckProtocol: TCP
+      Name:
+        !Join [
+          '-',
+          [!Ref ApplicationBaseName, !Ref ServiceName, !Ref Environment],
+        ]
+      Port: !Ref ServicePort
+      Protocol: TCP
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      HealthyThresholdCount: 2
+      VpcId: !FindInMap [VpcId, !Ref 'AWS::Region', !Ref Environment]
+      Tags:
+        - Key: Project
+          Value: !Ref ApplicationBaseName
+        - Key: Environment
+          Value: !Ref Environment
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn:
+        'Fn::ImportValue': !Join
+          - '-'
+          - - !Ref StackNameNlbAndCluster
+            - 'LoadBalancerArn'
+      Port: !Ref ListenerPort
+      Protocol: TCP
+  Policy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - ecs:*
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - ec2:CreateNetworkInterface
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DeleteNetworkInterface
+              - ecr:GetAuthorizationToken
+              - ecr:BatchCheckLayerAvailability
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+            Resource:
+              - '*'
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - !Ref Policy
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/${ApplicationBaseName}-${ServiceName}-${Environment}'
+      RetentionInDays: 30
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Image: !Ref ImageName
+          Cpu: 0
+          Memory: 1024
+          MemoryReservation: 512
+          Name: !Join ['_', [!Ref ServiceName, 'container']]
+          PortMappings:
+            - HostPort: !Ref ServicePort
+              Protocol: tcp
+              ContainerPort: !Ref ServicePort
+          Essential: true
+          Environment:
+            - Name: ENV
+              Value: !FindInMap [Environment, Name, !Ref Environment]
+            - Name: NEW_RELIC_APP_NAME
+              Value: !Join ['-', [!Ref Environment, !Ref ServiceName]]
+            - Name: NEW_RELIC_LICENSE_KEY
+              Value:
+                !FindInMap [Environment, NewRelicLicenseKey, !Ref Environment]
+            - Name: TZ
+              Value: America/Sao_Paulo
+            - Name: ELASTIC_APM_SERVICE_NAME
+              Value: !Join ['-', [!Ref Environment, !Ref ServiceName]]
+            - Name: ELASTIC_APM_SECRET_TOKEN
+              Value:
+                !FindInMap [Environment, ElasticApmSecret, !Ref Environment]
+            - Name: ELASTIC_APM_SERVER_URL
+              Value: !FindInMap [Environment, ElasticApmUrl, !Ref Environment]
+            - Name: ELASTIC_APM_ENVIRONMENT
+              Value: !FindInMap [Environment, Name, !Ref Environment]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: ecs
+      Cpu: 256
+      Memory: 1024
+      Family: !Ref ApplicationBaseName
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref Role
+      TaskRoleArn: !Ref Role
+      Tags:
+        - Key: Project
+          Value: !Ref ApplicationBaseName
+        - Key: Environment
+          Value: !Ref Environment
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: Listener
+    Properties:
+      Cluster:
+        'Fn::ImportValue': !Join
+          - '-'
+          - - !Ref StackNameNlbAndCluster
+            - 'ClusterName'
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      DesiredCount: 2
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: !Join ['_', [!Ref ServiceName, 'container']]
+          ContainerPort: !Ref ServicePort
+          TargetGroupArn: !Ref TargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            !FindInMap [VpcSecurityGroup, !Ref 'AWS::Region', !Ref Environment]
+          Subnets: !FindInMap [VpcSubnet, !Ref 'AWS::Region', !Ref Environment]
+      PlatformVersion: LATEST
+      ServiceName: !Join ['_', [!Ref ServiceName, !Ref Environment]]
+      TaskDefinition: !Ref TaskDefinition
+      Tags:
+        - Key: Project
+          Value: !Ref ApplicationBaseName
+        - Key: Environment
+          Value: !Ref Environment
+  AutoScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MinCapacity:
+        !FindInMap [Environment, AutoScalingMinCapacity, !Ref Environment]
+      MaxCapacity:
+        !FindInMap [Environment, AutoScalingMaxCapacity, !Ref Environment]
+      ResourceId: !Sub
+        - 'service/${ClusterName}/${ServiceName}'
+        - ClusterName:
+            'Fn::ImportValue': !Join
+              - '-'
+              - - !Ref StackNameNlbAndCluster
+                - 'ClusterName'
+          ServiceName: !GetAtt Service.Name
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      RoleARN: arn:aws:iam::585074645714:role/ecsAutoscaleRole
+      SuspendedState:
+        DynamicScalingInSuspended:
+          !FindInMap [Environment, DynamicScalingInSuspended, !Ref Environment]
+        DynamicScalingOutSuspended:
+          !FindInMap [Environment, DynamicScalingOutSuspended, !Ref Environment]
+        ScheduledScalingSuspended:
+          !FindInMap [Environment, ScheduledScalingSuspended, !Ref Environment]
+  AutoScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName:
+        !Join [
+          '-',
+          [!Ref ApplicationBaseName, !Ref ServiceName, !Ref Environment],
+        ]
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref AutoScalingTarget
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleInCooldown:
+          !FindInMap [Environment, AutoScalingInCooldown, !Ref Environment]
+        ScaleOutCooldown:
+          !FindInMap [Environment, AutoScalingOutCooldown, !Ref Environment]
+        TargetValue: 70

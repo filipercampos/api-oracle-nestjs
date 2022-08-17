@@ -1,0 +1,32 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": ".",
+  "roots": [
+    "<rootDir>",
+    "<rootDir>/../src/",
+    "<rootDir>/../libs/"
+  ],
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@global/(.*)": "<rootDir>/../src/global/$1",
+    "@global": "<rootDir>/../src/global",
+    "@modules/(.*)": "<rootDir>/../src/modules/$1",
+    "@modules": "<rootDir>/../src/modules/$1",
+    "@common/(.*)": "<rootDir>/../src/common/$1",
+    "@common": "<rootDir>/../src/common/$1",
+    "@shared/(.*)": "<rootDir>/../src/shared/$1",
+    "@shared": "<rootDir>/../src/shared/$1",
+    "@infra/(.*)": "<rootDir>/../src/infra/$1",
+    "@infra": "<rootDir>/../src/infra/$1",
+    "@app/marvel/(.*)": "<rootDir>/../libs/marvel/src/$1",
+    "@app/marvel": "<rootDir>/../libs/marvel/src"
+  }
+}

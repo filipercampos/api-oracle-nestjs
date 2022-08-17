@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "projects": {
+    "marvel": {
+      "type": "library",
+      "root": "libs/marvel",
+      "entryFile": "index",
+      "sourceRoot": "libs/marvel/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/marvel/tsconfig.lib.json"
+      }
+    }
+  },
+  "compilerOptions": {
+    "webpack": false,
+    "assets": [
+      {
+        "include": "**/*.sql",
+        "outDir": "./dist/src",
+        "watchAssets": true
+      }
+    ],
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "introspectComments": true,
+          "dtoFileNameSuffix": [
+            "dto",
+            "model",
+            "output",
+            "entity",
+            "response",
+            "body",
+            "input",
+            "header"
+          ]
+        }
+      }
+    ]
+  }
+}
