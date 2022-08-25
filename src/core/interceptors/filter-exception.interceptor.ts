@@ -58,7 +58,7 @@ export class FilterExceptionInterceptor implements ExceptionFilter {
     let exceptionCode: number;
     if (statusLogger.includes(status)) {
       this.logger.error(
-        `Request: ${request.url} status: ${status} error: ${JSON.stringify(
+        `Request: ${request.url}, status: ${status}, error: ${JSON.stringify(
           error,
         )}`,
       );

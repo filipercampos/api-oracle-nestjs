@@ -40,7 +40,10 @@ export abstract class BaseMapper<T> implements IMapper {
    * Parse array of entity
    */
   toArray(data: any): any {
-    return data;
+    if (!data || !('fromJson' in this)) {
+      return [];
+    }
+    return Mappper.mapperArray<T>(data, this.fromJson);
   }
 }
 

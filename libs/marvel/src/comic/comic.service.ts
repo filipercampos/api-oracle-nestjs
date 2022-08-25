@@ -30,12 +30,8 @@ export class ComicService
   async getComicById(id: string): Promise<Comic> {
     const endpoint = `comics/${id}`;
     const params = new QueryParameter(endpoint);
-    params.pushParam('apiKey', this.config.token);
-    console.log(this.config);
-    return this.get<Comic>(params).then((result) => {
-      console.log(result);
-      return result;
-    });
+    params.pushParam('apikey', this.config.token);
+    return this.get<Comic>(params);
   }
   /**
    * Get comics by title
@@ -43,8 +39,10 @@ export class ComicService
   async getComics(title: string): Promise<Comic[]> {
     const endpoint = 'comics';
     const params = new QueryParameter(endpoint);
-    params.pushParam('apiKey', this.config.token);
-    params.pushParam('title', title);
+    params.pushParam('apikey', this.config.token);
+    if (title) {
+      params.pushParam('title', title);
+    }
     return this.get<Comic[]>(params);
   }
   /**

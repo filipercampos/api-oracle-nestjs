@@ -30,6 +30,7 @@ export class CharacterService
   async getCharacterById(id: string): Promise<Character> {
     const endpoint = `characters/${id}`;
     const params = new QueryParameter(endpoint);
+    params.pushParam('apikey', this.config.token);
     return this.get<Character>(params);
   }
   /**
@@ -38,8 +39,10 @@ export class CharacterService
   async getCharacters(name: string): Promise<Character[]> {
     const endpoint = 'characters';
     const params = new QueryParameter(endpoint);
-    params.pushParam('name', name);
-    params.pushParam('apiKey', this.config.token);
+    if (name) {
+      params.pushParam('name', name);
+    }
+    params.pushParam('apikey', this.config.token);
     return this.get<Character[]>(params);
   }
   /**

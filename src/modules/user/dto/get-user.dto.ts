@@ -1,16 +1,24 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { IsEnum, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsOptional, Length } from 'class-validator';
 import { UserStatusEnum } from '../enums/user-status.enum';
 
 export class GetUserDto {
-  @ApiProperty()
-  @Length(5, 100, { message: 'Name min 5 e max 100 characteres' })
+  @IsOptional()
+  @ApiProperty({ required: false })
+  @Length(0, 100, { message: 'Max 100 characteres' })
   name: string;
 
-  @IsEnum(UserStatusEnum, { message: 'Status inválido' })
-  @ApiProperty({ enum: UserStatusEnum })
+  @IsOptional()
+  @ApiProperty()
+  @IsEmail({ message: 'Email is not valid' })
+  email: string;
+
+  @IsOptional()
+  @IsEnum(UserStatusEnum, { message: 'Status invalid' })
+  @ApiProperty({ enum: UserStatusEnum, required: false })
   status: UserStatusEnum;
 
-  @ApiHideProperty()
+  @IsOptional()
+  @ApiProperty()
   cpf: string;
 }

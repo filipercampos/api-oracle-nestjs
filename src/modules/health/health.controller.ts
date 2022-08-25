@@ -1,4 +1,4 @@
-import { PublicRoute } from '@common/http/decorators/public-route.decorator';
+import { Public } from '@common/decorators/public.decorator';
 import {
   ResponseErrorMessage,
   ResponseMessage,
@@ -7,8 +7,8 @@ import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HealthService } from './health.service';
 
+@Public()
 @ApiTags('health')
-@PublicRoute()
 @Controller(['health'])
 export class HealthController {
   constructor(private service: HealthService) {}

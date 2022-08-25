@@ -1,52 +1,104 @@
 import { RedisService } from '@common/cache/redis/redis.service';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { ERROR_DEFAULT } from '@shared/constants';
-import { MessageDto } from '@shared/dto';
+import { MessageDto } from '@common/dto';
 import { CryptoUtil } from '@shared/utils/crypto.util';
+import { TaskRepository } from './../task/repositories/task.repository';
 import { USER_MESSAGES } from './constants/user.const';
 import { GetUserDto } from './dto/get-user.dto';
-import { PatchUserExpirationDto } from './dto/patch-user.dto';
+import { PatchUserDto } from './dto/patch-user.dto';
 import { PostUserDto } from './dto/post-user.dto';
 import { UserEntity } from './entities/user.entity';
-import { IUserUsecase } from './interfaces/iuser-scope.usecase';
+import { IUserUsecase } from './interfaces/iuser.usecase';
 import { UserRepository } from './repositories/user.repository';
 @Injectable()
 export class UserService implements IUserUsecase {
   constructor(
     private repository: UserRepository,
+    private taskRepository: TaskRepository,
     private redisService: RedisService,
   ) {}
 
-  async getUsers(query: GetUserDto): Promise<UserEntity[]> {
-    //cpf encrypted
-    const redisKey = CryptoUtil.hashSha256(query.cpf).toUpperCase();
+  async getUserById(id: number): Promise<UserEntity> {
+    //get user by email
+    const result = await this.repository.findById(id);
+    //check has data
+    if (result) {
+      result.password = undefined;
+      try {
+        result.tasks = await this.taskRepository.find({
+          TSK_USU_ID: result.id,
+        });
+      } catch (err) {}
+      return result;
+    }
+    throw new UnprocessableEntityException('User not found');
+  }
+  /**
+   * Get user by email
+   */
+  async findByEmail(email: string): Promise<UserEntity> {
     //cache primary
-    const cache: UserEntity[] = await this.redisService.get(redisKey);
+    const cache: UserEntity = await this.redisService.get(email);
     // exists cache
     if (cache) {
-      //get scopes
+      //get users on cache
       return cache;
     }
-
-    //get scopes for access cpf
-    const users = await this.repository.findUsers(query);
-
-    if (users && users.length > 0) {
+    //get user by email
+    const users = await this.repository.findUsers({ email } as GetUserDto);
+    //check has data
+    if (users.length > 0) {
       //save cache
-      await this.redisService.save(redisKey, users);
+      await this.redisService.save(email, users[0]);
+      //get user data
+      return users[0];
     }
-    return users;
+    return null;
   }
 
-  async patchUser(body: PatchUserExpirationDto) {
-    //update scope
-    const result = await this.repository.patchExpiration(body);
-    if (!result) {
-      throw new Error(ERROR_DEFAULT);
+  /**
+   * Get user by CPF
+   */
+  async findByCpf(cpf: string): Promise<UserEntity> {
+    //cpf encrypted
+    const redisKey = CryptoUtil.hashSha256(cpf).toUpperCase();
+    //cache primary
+    const cache: UserEntity = await this.redisService.get(redisKey);
+    // exists cache
+    if (cache) {
+      //get users on cache
+      return cache;
     }
-    return new MessageDto(USER_MESSAGES.USER_UPDATE);
+    //get user by cpf
+    const users = await this.repository.findUsers({ cpf } as GetUserDto);
+    //check has data
+    if (users.length > 0) {
+      //save cache
+      await this.redisService.save(redisKey, users[0]);
+      //get user data
+      return users[0];
+    }
+    return null;
   }
 
+  /**
+   * Get users from query
+   */
+  getUsers(query: GetUserDto): Promise<UserEntity[]> {
+    if (Object.keys(query).length == 0)
+      throw new BadRequestException('At least one parameter must be provided');
+    //exec query to find users
+    return this.repository.findUsers(query);
+  }
+
+  /**
+   * Save user
+   */
   async postUser(body: PostUserDto) {
     //save scopes
     const result = await this.repository.saveUser(body);
@@ -54,5 +106,17 @@ export class UserService implements IUserUsecase {
       throw new Error(ERROR_DEFAULT);
     }
     return new MessageDto(USER_MESSAGES.USER_SAVE);
+  }
+
+  /**
+   * Update user
+   */
+  async patchUser(body: PatchUserDto) {
+    //update user data
+    const result = await this.repository.patchUser(body);
+    if (!result) {
+      throw new Error(ERROR_DEFAULT);
+    }
+    return new MessageDto(USER_MESSAGES.USER_UPDATE);
   }
 }

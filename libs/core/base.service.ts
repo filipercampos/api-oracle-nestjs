@@ -6,7 +6,9 @@ import { Agent } from 'https';
 import { firstValueFrom } from 'rxjs';
 import { BodyParameter, HeaderParameter, QueryParameter } from './helpers';
 import { BaseParameter } from './interfaces/external/base.parameter';
-
+/**
+ * Integration base service
+ */
 export abstract class BaseService {
   protected config: ApiConfig;
   private _useAgent: boolean;
@@ -25,10 +27,11 @@ export abstract class BaseService {
       const data = config.data;
       const params = config.params;
       const headers = config.headers;
-      this.logger.log('URL: ' + JSON.stringify(url));
+      this.logger.log('Base URL: ' + this.config.url);
       if (headers) this.logger.log('Headers: ' + JSON.stringify(headers));
       if (params) this.logger.log('Query: ' + JSON.stringify(params));
       if (data) this.logger.log('Body: ' + JSON.stringify(data));
+      this.logger.log('URL: ' + JSON.stringify(url));
     }
   }
   /**

@@ -1,6 +1,5 @@
 export class EnumUtil {
   static findByValue(o: Record<string, any>, value: any) {
-    // static findByValue(o: Record<string, any>, value: string | number) {
     //   /**
     //    ```
     //     // ✅ For NUMERIC Enums
@@ -10,27 +9,26 @@ export class EnumUtil {
     //       Large,
     //     }
     //    ```
-    //    **/
+    //    */
     //   const values = Object.values(o).filter((v) => !isNaN(Number(v)));
-    //   // console.log(values); // 👉️ ['0', '1', '2']
+    //   // log(values); // 👉️ ['0', '1', '2']
     //   return values.find((i) => i === value);
     // }
     return o[value];
   }
 
   static findByKey(o: Record<string, any>, key: any) {
-    // static findByKey(o: Record<string, any>, key: string) {
-    //   const keys = Object.keys(o).filter((v) => isNaN(Number(v)));
-    //   /*
+    //   /**
     //    *  //  For STRING Enums
     //    *  enum StringEnum {
     //    *    Small = 'S',
     //    *    Medium = 'M',
     //    *    Large = 'L',
     //    *  }
-    //    **/
-    //   // console.log(keys); // 👉️ ['Small', 'Medium', 'Large']
-    //   // console.log(values); // 👉️ ['0', '1', '2']
+    //    */
+    //   const keys = Object.keys(o).filter((v) => isNaN(Number(v)));
+    //   //keys 👉️ ['Small', 'Medium', 'Large']
+    //   //values 👉️ ['0', '1', '2']
     //   return keys.find((i) => i === key);
     // }
     return o[key];

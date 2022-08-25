@@ -15,7 +15,7 @@ export function initializeMiddlewares(app: INestApplication) {
   //app.setGlobalPrefix('api'); ignore (internal app)
   //versioning
   app.enableVersioning();
-  //interceptor error
+  //filter error
   app.useGlobalFilters(new FilterExceptionInterceptor());
   //interceptor
   app.useGlobalInterceptors(

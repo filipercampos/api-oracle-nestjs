@@ -6,6 +6,7 @@ import { Request } from 'express';
 import { USER_MESSAGES } from '../constants/user.const';
 import { PostUserDto } from '../dto/post-user.dto';
 import { UserRepository } from '../repositories/user.repository';
+import { GetUserDto } from './../dto/get-user.dto';
 /**
  * Validate post user scope
  */
@@ -23,7 +24,7 @@ export class PostUserPipe extends BaseValidationPipe {
     //get cpf from header
     const cpf = header['cpf'];
     //find user
-    const users = await this.userRepository.findUsers(cpf);
+    const users = await this.userRepository.findUsers({ cpf } as GetUserDto);
     //handle result
     if (users && users.length > 0) {
       handleEntity(USER_MESSAGES.USER_EXISTS);

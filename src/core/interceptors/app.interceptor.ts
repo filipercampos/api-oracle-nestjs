@@ -4,8 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class AppInterceptor implements NestInterceptor {
@@ -23,7 +22,9 @@ export class AppInterceptor implements NestInterceptor {
         //response default key is data
         //Example
         //{ data: any }
-        if (data instanceof String) {
+        if (data?.data) {
+          return data;
+        } else if (data instanceof String) {
           data = { message: data }; //default message
         } else if (data instanceof Array) {
           data = { results: data }; //default results

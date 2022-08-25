@@ -63,6 +63,8 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
     return Object.keys(this.metadata);
   }
 
+  abstract get type(): OracleMetadataType;
+
   /**
    * Create SELECT from oracle parameters
    */
@@ -92,10 +94,11 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
       }
       fieldsName = fields;
     } else {
-      fieldsName = '*';
+      fieldsName = this.fields;
     }
-    if (ObjectUtil.isEmpty(params) || !params?.hasData) {
-      const sql = `SELECT ${fieldsName} FROM ${this.tableName} ${top.replace(
+    const paramsRecord = params?.value ? params.value : params;
+    if (ObjectUtil.isEmpty(paramsRecord)) {
+      const sql = `SELECT ${fieldsName} FROM ${this.tableName.toUpperCase()} ${top.replace(
         'AND ',
         '',
       )}`;
@@ -104,11 +107,13 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
 
     if (BaseOracleMetadata.instanceOfParameter(params)) {
       const values = BaseOracleMetadata.extractCriteriaValues(params.value);
-      const sql = `SELECT ${fieldsName} FROM ${this.tableName} \nWHERE ${params.whereOptions}${top}`;
+      const sql = `SELECT ${fieldsName} FROM ${this.tableName.toUpperCase()} \nWHERE ${
+        params.whereOptions
+      }${top}`;
       return { sql, bindParams: values };
     } else {
       const whereOptions = BaseOracleMetadata.extractCriteriaNative(params);
-      const sql = `SELECT ${fieldsName} FROM ${this.tableName} \nWHERE ${whereOptions}${top}`;
+      const sql = `SELECT ${fieldsName} FROM ${this.tableName.toUpperCase()} \nWHERE ${whereOptions}${top}`;
       return { sql, bindParams: {} };
     }
   }
@@ -152,6 +157,7 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
    * Get sql text SELECT from criteria native
    */
   static extractCriteriaNative<T>(criteria: FindOptionsWhere<T>): string {
+    if (!criteria) throw new Error('criteria is not provided');
     const keys = Object.keys(criteria);
     let condition = '';
     for (let i = 0; i < keys.length; i++) {
@@ -189,7 +195,7 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
    * Create insert command Oracle
    */
   static createInsertCommand(tableName: string, entity: any): OracleStatement {
-    let sqlText = `INSERT INTO ${tableName} (@keys) VALUES (@keysBind)`;
+    let sqlText = `INSERT INTO ${tableName.toUpperCase()} (@keys) VALUES (@keysBind)`;
     const keys: Array<string> = Object.keys(entity);
     const keysBinds = [];
     const values = [];
@@ -207,7 +213,7 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
     sqlText = sqlText.replace('@keys', keys.toString());
     sqlText = sqlText.replace('@keysBind', keysBinds.toString());
     return {
-      sql: sqlText,
+      sql: sqlText.toUpperCase(),
       bindParams: values,
     };
   }
@@ -234,7 +240,7 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
         entries += `${entryValue}`;
       }
     }
-    const sqlText = `UPDATE ${tableName} SET ${entries} WHERE ${whereOptions}`;
+    const sqlText = `UPDATE ${tableName.toUpperCase()} SET ${entries.toUpperCase()} WHERE ${whereOptions}`;
     return {
       sql: sqlText,
       bindParams: values,
@@ -249,7 +255,7 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
     criteria: FindOptionsWhere<any>,
   ): OracleStatement {
     const condition = BaseOracleMetadata.extractCriteriaNative(criteria);
-    const sql = `DELETE FROM ${tableName} WHERE ${condition}`;
+    const sql = `DELETE FROM ${tableName.toUpperCase()} WHERE ${condition}`;
     return { sql, bindParams: undefined };
   }
 
@@ -263,23 +269,88 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
   }
 
   /**
-   * Create offset pagination
+   * Create query with pagination
    */
-  static createOffset(
+  createCriteriaOffset(
+    params:
+      | FindOptionsWhere<any>
+      | OracleParameter<any>
+      | OracleParameters<any>,
     pagination: OraclePaginationType,
+    fields?: Array<string>,
     orderBy?: IOracleOrderBy,
-  ): string {
-    let page: number, limit: number;
-    if (pagination.page) {
-      page = pagination.page;
+  ): OracleStatement {
+    //binds
+    const binds = {
+      bindParams: {},
+    } as OracleStatement;
+    //pagination options
+    const page: number = pagination.page;
+    const limit: number = pagination.limit;
+
+    let fieldsName: string[] = [];
+
+    if (fields && fields.length > 0) {
+      for (const f of fields) {
+        if (!this.fields.includes(f)) {
+          throw new Error(`field name is invalid ${f}`);
+        }
+      }
+      fieldsName = fields;
+    } else {
+      fieldsName = this.fields;
     }
-    if (pagination.limit) {
-      limit = pagination.limit;
+    //calculate total pages
+    // const totalPagesField = `COUNT(*) OVER () / ${limit} TOTAL_COUNT`;
+    const totalCountField = `\nCOUNT(*) OVER () TOTAL_COUNT`;
+
+    //check has parameters
+    const paramsRecord = params?.value ? params.value : params;
+    if (ObjectUtil.isEmpty(paramsRecord)) {
+      const sql = `SELECT ${fieldsName}, ${totalCountField} FROM ${this.tableName.toUpperCase()}`;
+      binds.sql = sql;
     }
-    const order = orderBy ? `${orderBy.field} ${orderBy.direction}` : '';
-    if (page && limit) {
-      return `\nORDER BY ${order}\nOFFSET ${page} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+    //oracle parameters
+    else if (BaseOracleMetadata.instanceOfParameter(params)) {
+      const values = BaseOracleMetadata.extractCriteriaValues(params.value);
+      const sql = `SELECT ${fieldsName}, ${totalCountField} FROM ${this.tableName.toUpperCase()} \nWHERE ${
+        params.whereOptions
+      }${top}`;
+      //set statement
+      binds.sql = sql;
+      binds.bindParams = values;
+    } else {
+      //sql native
+      const whereOptions = BaseOracleMetadata.extractCriteriaNative(params);
+      const sql = `SELECT ${fieldsName}, ${totalCountField} FROM ${this.tableName.toUpperCase()} \nWHERE ${whereOptions}${top}`;
+      //set statement
+      binds.sql = sql;
     }
-    return '';
+    //set order
+    const order = `ORDER BY ${orderBy.field ?? 1} ${
+      orderBy.direction ?? 'ASC'
+    }`;
+    //set offset (this option not working with page not exists)
+    //Example
+    // total = 2
+    // page = 3
+    // results = true
+    // const offset = `OFFSET ${page} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+    // build offset
+    // binds.sql = `${binds.sql}\n${order}\n${offset}`;
+    const sqlPagination = `SELECT * FROM
+(
+    SELECT t.*, ROWNUM rownumid
+    FROM
+    (
+      ${binds.sql}\n${order}
+    ) t
+    WHERE ROWNUM < ((${page} * ${limit}) + 1 )
+)
+WHERE rownumid >= (((${page}-1) * ${limit}) + 1)`;
+    //build pagination statement
+    binds.sql = sqlPagination;
+
+    return binds;
   }
 }

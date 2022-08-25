@@ -29,7 +29,7 @@ export class CharacterController {
   })
   @Get('characteres/:id')
   @ApiParam({ name: 'id', type: String, required: true })
-  getScope(@Param('id') id: string) {
+  getCharacterById(@Param('id') id: string) {
     return this.service.getCharacterById(id);
   }
 

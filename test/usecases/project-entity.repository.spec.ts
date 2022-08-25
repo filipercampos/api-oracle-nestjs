@@ -1,7 +1,7 @@
 import {
   ProjectMetadataType,
   ProjectOracleRepository,
-} from '@common/data/oracle/project-oracle.repository';
+} from 'test/usecases/project-oracle.repository';
 import { loadConfig } from '@infra/config/load.config';
 
 describe('TDD ProjectRepository', () => {

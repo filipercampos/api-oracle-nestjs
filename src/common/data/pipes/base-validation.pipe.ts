@@ -78,4 +78,17 @@ export abstract class BaseValidationPipe implements PipeTransform<any> {
     }
     return true;
   }
+  /**
+   * Extract params in path
+   */
+  getParamsId(): number | string {
+    const id: any = this.request.params['id'];
+    if (isNaN(id)) {
+      if (id === ':id') {
+        return null;
+      }
+      return id;
+    }
+    return parseInt(id);
+  }
 }

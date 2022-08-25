@@ -8,7 +8,7 @@ import {
   Injectable,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { MessageDto } from '@shared/dto';
+import { MessageDto } from '@common/dto';
 
 @Injectable()
 export class HealthService {

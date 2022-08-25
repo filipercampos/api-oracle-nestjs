@@ -34,7 +34,7 @@ export class RequestParameter {
       } else if (p.type == BaseParameterEnum.Header) {
         this.config.headers = p.values;
       } else {
-        throw new Error('params not mappead');
+        throw new Error('parameter type not mapped');
       }
     }
   }

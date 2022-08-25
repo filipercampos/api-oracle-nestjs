@@ -17,7 +17,7 @@ export class OracleParameter<T> implements IOracleParameter {
     data:
       | FindOptionsWhere<T>
       | Record<string, string | number | boolean | Date>,
-    op: 'AND' | 'OR' | '<>' = 'AND',
+    op: 'AND' | 'OR' | '<>' | 'LIKE' = 'AND',
   ) {
     const keys = Object.keys(data);
     const key = keys[0];
@@ -109,11 +109,18 @@ export class OracleParameters<T> implements IOracleParameter {
     for (let i = 0; i < this._parameters.length; i++) {
       const p = this._parameters[i];
       if (i == 0) {
-        where += `${p.whereOptions.replace(p.operator, '').trim()}`;
+        if (p.operator != 'LIKE') {
+          where += `${p.whereOptions.replace(p.operator, '').trim()}`;
+        } else {
+          where += `${p.whereOptions
+            .replace(p.operator, '')
+            .replace('=', p.operator)
+            .trim()}`;
+        }
       } else if (i < this._parameters.length - 1) {
         where += `\n${p.whereOptions}\n`;
       } else {
-        where += `${p.whereOptions} `;
+        where += `\n${p.whereOptions} `;
       }
     }
     return where.toUpperCase();

@@ -1,43 +1,38 @@
+import { Roles } from '@common/decorators/roles.decorator';
 import {
   ResponseErrorMessage,
   ResponseMessage,
 } from '@common/interfaces/response-message';
+import { UserEntity } from '@modules/user/entities/user.entity';
 import {
   Body,
   Controller,
   Get,
   HttpStatus,
+  Param,
   Patch,
-  Post,
   Query,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ApiCpfHeader } from '@shared/decorators/cpf.decorator';
-import { CpfHeaderDto } from '@shared/dto';
-import { GetUserDto } from './dto/get-user.dto';
-import { PatchUserExpirationDto } from './dto/patch-user.dto';
-import { PostUserDto } from './dto/post-user.dto';
-import { IUserUsecase } from './interfaces/iuser-scope.usecase';
-import { GetUserScopeModel } from './models/get-user.model';
-import { PatchtUserPipe } from './pipes/patch-user.pipe';
-import { PostUserPipe } from './pipes/post-user.pipe';
+import { ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ProfileRoleEnum } from '@shared/roles/profile.role.enum';
+import { X_API_KEY } from './../../shared/constants';
+import { GetUserDto, PatchUserDto } from './dto';
+import { IUserUsecase } from './interfaces/iuser.usecase';
+import { PatchUserPipe } from './pipes/patch-user.pipe';
 
+@ApiSecurity(X_API_KEY)
 @ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(private service: IUserUsecase) {}
 
   /**
-   * Get user'   */
-  @ApiHeader({
-    name: 'cpf',
-    description: 'CPF user',
-    required: true,
-  })
+   * Get user
+   */
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'OK',
-    type: GetUserScopeModel,
+    type: UserEntity,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -49,58 +44,41 @@ export class UserController {
     description: 'Invalid response',
     type: ResponseErrorMessage,
   })
+  @Get(':id')
+  getUserById(@Param('id') id: number) {
+    return this.service.getUserById(id);
+  }
+
+  /**
+   * Get users
+   *
+   * Required admin role
+   */
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'OK',
+    type: [UserEntity],
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid parameters',
+    type: ResponseErrorMessage,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_GATEWAY,
+    description: 'Invalid response',
+    type: ResponseErrorMessage,
+  })
+  @Roles(ProfileRoleEnum.ADMIN)
+  // @UseGuards(JwtAuthGuard) is global
   @Get()
-  getScopes(
-    @ApiCpfHeader(CpfHeaderDto)
-    cpfHeader: CpfHeaderDto,
-    @Query()
-    query: GetUserDto,
-  ) {
-    //transf cpf header to query
-    query.cpf = cpfHeader.cpf;
+  getUsers(@Query() query: GetUserDto) {
     return this.service.getUsers(query);
   }
 
   /**
-   * Save user authorization scope
+   * Update user's data
    */
-  @ApiHeader({
-    name: 'cpf',
-    description: 'CPF user',
-    required: true,
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'OK',
-    type: ResponseMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
-  @Post()
-  postUserScope(
-    @ApiCpfHeader(CpfHeaderDto)
-    @Body(PostUserPipe)
-    body: PostUserDto,
-  ) {
-    return this.service.postUser(body);
-  }
-
-  /**
-   * Update user's authorization scope
-   */
-  @ApiHeader({
-    name: 'cpf',
-    description: 'CPF user',
-    required: true,
-  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'OK',
@@ -117,11 +95,7 @@ export class UserController {
     type: ResponseErrorMessage,
   })
   @Patch()
-  patchUserScopes(
-    @ApiCpfHeader(CpfHeaderDto)
-    @Body(PatchtUserPipe)
-    body: PatchUserExpirationDto,
-  ) {
+  patchUserScopes(@Body(PatchUserPipe) body: PatchUserDto) {
     return this.service.patchUser(body);
   }
 }

@@ -2,7 +2,7 @@ import { OracleConnectionFactory } from '@infra/database/oracle/oracle-connectio
 import { Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { BaseMapper, Mappper } from '../base/base.mapper';
+import { BaseMapper } from '../base/base.mapper';
 import { BaseOracleMetadata } from '../base/base.metadata';
 import { FindOptionsWhere } from '../interfaces/find-options-where';
 import {
@@ -11,6 +11,7 @@ import {
 } from '../interfaces/ioracle.parameter';
 import { IRepository } from '../interfaces/irepository';
 import { LoggerOracle } from '../utils/logger-oracle';
+import { IOracleResults } from './../interfaces/ioracle-results';
 import { OracleParameter, OracleParameters } from './oracle.parameter';
 import oracledb = require('oracledb');
 /**
@@ -33,8 +34,8 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
    */
   constructor(metadata: BaseOracleMetadata, mapper?: BaseMapper<T>) {
     this.autoCommit = true;
-    this.tableName = metadata.tableName;
-    this.primaryKeyName = metadata.primaryKeyName.name;
+    this.tableName = metadata.tableName.toUpperCase();
+    this.primaryKeyName = metadata.primaryKeyName.name.toUpperCase();
     this.logger = new Logger(this.constructor.name);
     this.connectionFactory = new OracleConnectionFactory();
     this._showLog = process.env.ENV === 'local';
@@ -114,18 +115,12 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
     options?: {
       fields?: Array<string>;
       order?: IOracleOrderBy;
-      paginate?: OraclePaginationType;
     },
   ): Promise<T[]> {
     this.log('find');
     const connection = await this.openConnection();
     const query = this.metadata.createQuery(criteria, options?.fields);
-    if (options?.paginate) {
-      query.sql += BaseOracleMetadata.createOffset(
-        options.paginate,
-        options.order,
-      );
-    }
+
     this.loggerOracle.logStatement(query);
     return connection
       .execute(query.sql, query.bindParams)
@@ -133,9 +128,50 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
         this.loggerOracle.logFind(result);
         const results: any = result.rows ?? [];
         if (this.mapperEntity) {
-          return Mappper.mapperArray(results, this.mapperEntity);
+          return this.mapperEntity.toArray(results);
         }
         return results;
+      })
+      .finally(() => this.closeConnection());
+  }
+  /**
+   * Find rows by criteria/parameters
+   *
+   * Object 'criteria' always use operator AND
+   *
+   * To use other operator use {@link OracleParameter}
+   */
+  async findWithPagination(
+    criteria: FindOptionsWhere<M> | OracleParameter<M> | OracleParameters<M>,
+    pagination: OraclePaginationType,
+    options?: {
+      fields?: Array<string>;
+      order?: IOracleOrderBy;
+    },
+  ): Promise<IOracleResults<T>> {
+    this.log('find');
+    const connection = await this.openConnection();
+    //build query pagination
+    const query = this.metadata.createCriteriaOffset(
+      criteria,
+      pagination,
+      options?.fields,
+      options?.order,
+    );
+    this.loggerOracle.logStatement(query);
+    return connection
+      .execute(query.sql, query.bindParams)
+      .then((result) => {
+        this.loggerOracle.logFind(result);
+        let results: any = result.rows ?? [];
+        //total count
+        const count =
+          results?.length > 0 ? results[0]['TOTAL_COUNT'] : undefined;
+        //mapper data
+        if (this.mapperEntity) {
+          results = this.mapperEntity.toArray(results);
+        }
+        return { results, count };
       })
       .finally(() => this.closeConnection());
   }
@@ -263,6 +299,12 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
     const params = BaseOracleMetadata.instanceOfParameter(binds)
       ? binds.value
       : binds;
+    if (binds instanceof Array) {
+      const statement = { sql, values: binds };
+      this.loggerOracle.logStatement(statement);
+    } else {
+      this.loggerOracle.logStatement(params);
+    }
     return connection
       .execute(sql, params ?? {}, { autoCommit: autoCommit ?? true })
       .then((result) => {
@@ -404,7 +446,11 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
     //create param
     const criteria = {};
     //set value on primary key name
-    criteria[this.primaryKeyName] = id;
+    if (this.metadata.primaryKeyName.type === 'number') {
+      criteria[this.primaryKeyName] = parseInt(id.toString());
+    } else {
+      criteria[this.primaryKeyName] = id.toString();
+    }
     return criteria;
   }
 

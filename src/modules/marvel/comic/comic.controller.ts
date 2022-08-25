@@ -29,7 +29,7 @@ export class ComicController {
   })
   @Get('comics/:id')
   @ApiParam({ name: 'id', type: String, required: true })
-  getScope(@Param('id') id: string) {
+  getComicById(@Param('id') id: string) {
     return this.service.getComicById(id);
   }
 
@@ -54,7 +54,7 @@ export class ComicController {
   })
   @ApiQuery({ name: 'title', type: String, required: false })
   @Get('comics')
-  getComices(@Query('title') title: string) {
+  getComics(@Query('title') title: string) {
     return this.service.getComics(title);
   }
 }

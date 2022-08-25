@@ -7,7 +7,10 @@ import {
 import { CpfCnpjUtil } from '@shared/utils/cpf-cnpj/cpf-cnpj.util';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject, ValidationError } from 'class-validator';
-export const ApiCpfHeader = createParamDecorator(
+/**
+ * Request in header cpf
+ */
+export const CpfHeader = createParamDecorator(
   async (data: any, ctx: ExecutionContext) => {
     // extract headers
     const headers = ctx.switchToHttp().getRequest().headers;
