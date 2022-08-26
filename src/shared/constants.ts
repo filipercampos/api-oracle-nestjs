@@ -1,5 +1,5 @@
-/** API Key name */
-export const X_API_KEY = 'x-api-key';
+/** API Security scheme for authentication and authorization */
+export const X_API_KEY = 'ApiKeyAuth';
 /**Time seconds */
 export const TIMEOUT_SECONDS = 40000;
 /**Time seconds */

@@ -5,13 +5,15 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class ResponseErrorMessage {
   @ApiProperty()
-  data: {
-    message: string[];
-    status: number;
-    statusText: string;
-    log: string;
-    path: string;
-  };
+  message: string[];
+  @ApiProperty()
+  status: number;
+  @ApiProperty()
+  statusText: string;
+  @ApiProperty()
+  log: string;
+  @ApiProperty()
+  path: string;
 }
 
 /**
@@ -19,7 +21,5 @@ export class ResponseErrorMessage {
  */
 export class ResponseMessage {
   @ApiProperty()
-  data: {
-    message: string;
-  };
+  message: string;
 }

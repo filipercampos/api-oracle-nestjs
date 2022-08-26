@@ -4,13 +4,13 @@ import { UserStatusEnum } from '../enums/user-status.enum';
 
 export class GetUserDto {
   @IsOptional()
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: 'Username', required: false })
   @Length(0, 100, { message: 'Max 100 characteres' })
   name: string;
 
   @IsOptional()
-  @ApiProperty()
   @IsEmail({ message: 'Email is not valid' })
+  @ApiProperty({ description: 'Email', required: false })
   email: string;
 
   @IsOptional()
@@ -19,6 +19,6 @@ export class GetUserDto {
   status: UserStatusEnum;
 
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ description: 'CPF', required: false })
   cpf: string;
 }

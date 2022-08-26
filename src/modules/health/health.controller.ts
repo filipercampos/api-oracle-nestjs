@@ -1,10 +1,12 @@
+import { ApiDataResponse } from '@common/decorators/api-data-response.decorator';
+import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
 import { Public } from '@common/decorators/public.decorator';
 import {
   ResponseErrorMessage,
   ResponseMessage,
 } from '@common/interfaces/response-message';
 import { Controller, Get, HttpStatus } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { HealthService } from './health.service';
 
 @Public()
@@ -15,26 +17,17 @@ export class HealthController {
   /**
    * Health check status
    */
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.OK,
     description: 'OK',
     type: ResponseMessage,
   })
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.REQUEST_TIMEOUT,
     description: 'Request timeout',
     type: ResponseErrorMessage,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'No connection database',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.SERVICE_UNAVAILABLE,
-    description: 'Server off',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Get()
   getHealth() {
     return this.service.healthCheck();

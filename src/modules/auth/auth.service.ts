@@ -1,5 +1,3 @@
-import { MessageDto } from '@common/dto';
-import { USER_MESSAGES } from '@modules/user/constants/user.const';
 import { PostUserDto } from '@modules/user/dto/post-user.dto';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
@@ -7,7 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ERROR_DEFAULT } from '@shared/constants';
 import { BcryptUtil } from '@shared/utils/bcrypt.util';
 import { UserService } from './../user/user.service';
-import { JwtTokenDto, UserDataAuthDto } from './dto';
+import { JwtTokenDto } from './dto/token-jwt.dto';
+import { UserDataAuthDto } from './dto/user-data-auth.dto';
 import { IAuthUsecase } from './interfaces/iauth.usecase';
 
 @Injectable()
@@ -59,7 +58,7 @@ export class AuthService implements IAuthUsecase {
   /**
    * Save user
    */
-  async saveUser(body: PostUserDto) {
+  async saveUser(body: PostUserDto): Promise<JwtTokenDto> {
     //encrypt password
     const hashPassword = await BcryptUtil.hash(body.password);
     //set new password
@@ -69,6 +68,8 @@ export class AuthService implements IAuthUsecase {
     if (!result) {
       throw new Error(ERROR_DEFAULT);
     }
-    return new MessageDto(USER_MESSAGES.USER_SAVE);
+    const user = await this.userService.findByEmail(body.email);
+
+    return this.signWithCredentials(user);
   }
 }

@@ -6,7 +6,6 @@ import { IsInt, IsOptional, Max, Min } from 'class-validator';
  */
 export class PageOptionsDto {
   @ApiPropertyOptional({ default: true })
-  // @Expose({ name: 'paginate' })
   readonly paginate?: boolean = true;
 
   @ApiPropertyOptional({
@@ -17,21 +16,19 @@ export class PageOptionsDto {
   @IsInt()
   @Min(1)
   @IsOptional()
-  // @Expose({ name: 'page' })
   readonly page?: number = 1;
 
   @ApiPropertyOptional({
     minimum: 1,
-    maximum: 50,
-    default: 10,
+    default: 20,
+    // maximum: 50,
   })
   @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(50)
   @IsOptional()
-  // @Expose({ name: 'limit' })
-  readonly limit?: number = 10;
+  readonly limit?: number = 20;
 
   /**
    * Offset from page

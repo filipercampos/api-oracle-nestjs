@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { HealthModule } from './health.module';
 import { HealthService } from './health.service';
-describe('HealthScopes', () => {
+describe('Health', () => {
   let app: INestApplication;
   const service = {
     healthCheck: () => ({

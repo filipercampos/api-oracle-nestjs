@@ -1,8 +1,9 @@
 import { IComicUsecase } from '@app/marvel/comic/icomic.usecases';
 import { Comic } from '@app/marvel/comic/models/comic.model';
-import { ResponseErrorMessage } from '@common/interfaces/response-message';
-import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiMarvelResponse } from '@shared/decorators/api-marvel-response.decorator';
 
 @ApiTags('marvel')
 @Controller('marvel')
@@ -12,21 +13,11 @@ export class ComicController {
   /**
    * Get comic by id
    */
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'OK',
+  @ApiMarvelResponse({
+    description: 'Comic list with one comic data',
     type: Comic,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Get('comics/:id')
   @ApiParam({ name: 'id', type: String, required: true })
   getComicById(@Param('id') id: string) {
@@ -37,21 +28,11 @@ export class ComicController {
    * Get comics
    *
    */
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'OK',
+  @ApiMarvelResponse({
+    description: 'Comic list',
     type: Comic,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @ApiQuery({ name: 'title', type: String, required: false })
   @Get('comics')
   getComics(@Query('title') title: string) {

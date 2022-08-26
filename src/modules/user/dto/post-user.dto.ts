@@ -11,7 +11,7 @@ export class PostUserDto {
   lastName: string;
 
   @ApiProperty({ required: true })
-  @IsEmail({ message: 'Email is not valid' })
+  @IsEmail({}, { message: 'Email is not valid' })
   email: string;
 
   @ApiProperty({ description: 'Password' })
@@ -19,8 +19,11 @@ export class PostUserDto {
   password: string;
 
   @IsEnum(ProfileRoleEnum, { message: 'Profile invalid' })
-  @ApiProperty({ enum: ProfileRoleEnum, required: true })
-  profile: ProfileRoleEnum;
+  @ApiProperty({
+    enum: ProfileRoleEnum,
+    default: ProfileRoleEnum.DEFAULT,
+  })
+  profile: ProfileRoleEnum = ProfileRoleEnum.DEFAULT;
 
   @ApiHideProperty()
   cpf: string;

@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { writeFileSync } from 'fs';
 /**
  * Swagger doc builder
  */
@@ -23,11 +24,10 @@ export class SwaggerDoc {
       .setExternalDoc('Organization Website', 'https://example.com')
 
       //use api key
-      .addSecurity('x-api-key', {
+      .addSecurity('ApiKeyAuth', {
         type: 'apiKey',
-        name: 'x-api-key',
         in: 'header',
-        scheme: 'bearer',
+        name: 'x-api-key',
         description: 'Security Token',
       })
 
@@ -49,7 +49,7 @@ export class SwaggerDoc {
     const document = SwaggerModule.createDocument(app, config);
 
     SwaggerModule.setup('docs', app, document);
-    // import fs and generate swagger json
-    // fs.writeFileSync('./swagger-docs.json', JSON.stringify(document));
+    // generate swagger json
+    writeFileSync('./swagger-docs.json', JSON.stringify(document));
   };
 }

@@ -1,9 +1,8 @@
+import { ApiPaginatedResponse } from '@common/decorators';
+import { ApiDataResponse } from '@common/decorators/api-data-response.decorator';
+import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
 import { Roles } from '@common/decorators/roles.decorator';
-import {
-  ResponseErrorMessage,
-  ResponseMessage,
-} from '@common/interfaces/response-message';
-import { UserEntity } from '@modules/user/entities/user.entity';
+import { ResponseMessage } from '@common/interfaces/response-message';
 import {
   Body,
   Controller,
@@ -13,11 +12,12 @@ import {
   Patch,
   Query,
 } from '@nestjs/common';
-import { ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { X_API_KEY } from '@shared/constants';
 import { ProfileRoleEnum } from '@shared/roles/profile.role.enum';
-import { X_API_KEY } from './../../shared/constants';
 import { GetUserDto, PatchUserDto } from './dto';
 import { IUserUsecase } from './interfaces/iuser.usecase';
+import { GetUserModel } from './models/get-user.model';
 import { PatchUserPipe } from './pipes/patch-user.pipe';
 
 @ApiSecurity(X_API_KEY)
@@ -29,21 +29,11 @@ export class UserController {
   /**
    * Get user
    */
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'OK',
-    type: UserEntity,
+  @ApiPaginatedResponse({
+    description: 'User data',
+    type: GetUserModel,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Get(':id')
   getUserById(@Param('id') id: number) {
     return this.service.getUserById(id);
@@ -54,21 +44,11 @@ export class UserController {
    *
    * Required admin role
    */
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiPaginatedResponse({
     description: 'OK',
-    type: [UserEntity],
+    type: GetUserModel,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Roles(ProfileRoleEnum.ADMIN)
   // @UseGuards(JwtAuthGuard) is global
   @Get()
@@ -79,23 +59,14 @@ export class UserController {
   /**
    * Update user's data
    */
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.OK,
     description: 'OK',
     type: ResponseMessage,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Patch()
-  patchUserScopes(@Body(PatchUserPipe) body: PatchUserDto) {
+  patchUser(@Body(PatchUserPipe) body: PatchUserDto) {
     return this.service.patchUser(body);
   }
 }

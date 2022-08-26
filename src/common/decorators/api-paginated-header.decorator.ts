@@ -5,7 +5,7 @@ export interface PaginationOptions {
   limit: number;
 }
 /**
- * Header pagination swagger docs
+ * Pagination parameters in header swagger docs
  */
 export const ApiPaginatedHeader = (options?: PaginationOptions) => {
   return applyDecorators(
@@ -19,7 +19,7 @@ export const ApiPaginatedHeader = (options?: PaginationOptions) => {
       schema: {
         type: 'number',
         minimum: 1,
-        maximum: options?.limit ?? 50,
+        maximum: options?.limit ?? 20,
         default: 20,
       },
       description: 'Limits the amount of records',

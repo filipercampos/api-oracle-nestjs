@@ -1,6 +1,6 @@
+import { GetTaskDto } from '@modules/task/dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserStatusEnum } from '../enums/user-status.enum';
-import { TaskEntity } from './../../task/entities/task.entity';
 /**
  * Response user
  */
@@ -24,5 +24,5 @@ export class GetUserModel {
   @ApiProperty()
   password?: string;
   @ApiProperty()
-  tasks: TaskEntity[];
+  tasks: GetTaskDto[];
 }

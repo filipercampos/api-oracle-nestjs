@@ -1,8 +1,7 @@
-import { MessageDto } from '@common/dto';
 import { PostUserDto } from '@modules/user/dto/post-user.dto';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { Injectable } from '@nestjs/common';
-import { JwtTokenDto } from '../dto';
+import { JwtTokenDto } from '../dto/token-jwt.dto';
 
 @Injectable()
 export abstract class IAuthUsecase {
@@ -22,5 +21,5 @@ export abstract class IAuthUsecase {
   /**
    * Save user's data
    */
-  abstract saveUser(body: PostUserDto): Promise<MessageDto>;
+  abstract saveUser(body: PostUserDto): Promise<JwtTokenDto>;
 }

@@ -7,28 +7,29 @@ interface IPaginatedDecoratorApiResponse<T> {
   description?: string;
 }
 /**
- * Response pagination swagger docs
+ * Response marvel swagger docs
  */
-export const ApiPaginatedResponse = <TModel extends Type<any>>(
+export const ApiMarvelResponse = <TModel extends Type<any>>(
   options: IPaginatedDecoratorApiResponse<TModel>,
 ) => {
   return applyDecorators(
-    ApiExtraModels(PageDto<TModel>, options.type),
+    ApiExtraModels(PageDto, options.type),
     ApiOkResponse({
       status: HttpStatus.OK,
       description: options.description || 'Successfully received model list',
       schema: {
-        allOf: [
-          { $ref: getSchemaPath(PageDto) },
-          {
+        properties: {
+          data: {
+            type: 'object',
+            $ref: getSchemaPath(PageDto),
             properties: {
-              data: {
+              results: {
                 type: 'array',
                 items: { $ref: getSchemaPath(options.type) },
               },
             },
           },
-        ],
+        },
       },
     }),
   );

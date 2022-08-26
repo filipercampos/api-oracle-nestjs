@@ -6,22 +6,20 @@ import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { TASK_MESSAGES } from './constants/task.const';
 import { PostTaskDto } from './dto/post-task.dto';
-import { TaskModule } from './scope.module';
-import { TaskService } from './scope.service';
-describe('TaskTasks', () => {
+import { TaskModule } from './task.module';
+import { TaskService } from './task.service';
+describe('Task e2e', () => {
   let app: INestApplication;
-  const scopeService = {
+  const serviceMock = {
     getTasks: () => {
       return {
         data: {
-          scopes: ['test1', 'test2'],
           message: [],
-          varejo: false,
         },
       };
     },
     postResponse: () => {
-      return { message: TASK_MESSAGES.SCOPE_SAVE };
+      return { message: TASK_MESSAGES.TASK_SAVE };
     },
   };
 
@@ -36,31 +34,30 @@ describe('TaskTasks', () => {
       ],
     })
       .overrideProvider(TaskService)
-      .useValue(scopeService)
+      .useValue(serviceMock)
       .compile();
 
     app = moduleRef.createNestApplication();
     await app.init();
   });
-
-  it(`/GET scopes`, () => {
-    return request(app.getHttpServer())
-      .get('/scopes')
-      .set({ cpf: '01234567890' })
-      .expect(200)
-      .expect(scopeService.getTasks());
-  });
-
-  it(`/POST scopes`, () => {
+  it(`/POST task`, () => {
     const body = {
-      name: 'Test',
-      description: 'Test',
+      name: 'Task test',
+      description: 'Description Test',
+      userId: 2,
+      done: false,
     } as PostTaskDto;
     return request(app.getHttpServer())
-      .post('/scopes')
+      .post('/tasks')
       .send(body)
       .expect(201)
-      .expect(scopeService.postResponse());
+      .expect(serviceMock.postResponse());
+  });
+  it(`/GET tasks/:id`, () => {
+    return request(app.getHttpServer()).get('/tasks').expect(200);
+  });
+  it(`/GET tasks`, () => {
+    return request(app.getHttpServer()).get('/tasks').expect(200);
   });
 
   afterAll(async () => {

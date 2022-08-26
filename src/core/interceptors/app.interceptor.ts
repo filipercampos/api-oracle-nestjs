@@ -23,11 +23,12 @@ export class AppInterceptor implements NestInterceptor {
         //Example
         //{ data: any }
         if (data?.data) {
-          return data;
+          return data ?? {};
         } else if (data instanceof String) {
           data = { message: data }; //default message
-        } else if (data instanceof Array) {
-          data = { results: data }; //default results
+        } else if (!data) {
+          //avoid null
+          return { data: {} };
         }
         //get data
         return { data };

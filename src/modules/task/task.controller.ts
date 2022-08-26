@@ -1,4 +1,6 @@
 import { ApiPaginatedResponse, RequestParamId } from '@common/decorators';
+import { ApiDataResponse } from '@common/decorators/api-data-response.decorator';
+import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
 import { IdParamDto, PageDto } from '@common/dto';
 import { PageOptionsDto } from '@common/dto/page-options.dto';
 import {
@@ -16,7 +18,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { X_API_KEY } from '@shared/constants';
 import { GetTaskDto, PostTaskDto, PutTaskDto } from './dto';
 
@@ -33,21 +35,11 @@ export class TaskController {
   /**
    * Get scope by id
    */
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'OK',
+  @ApiPaginatedResponse({
     type: GetTaskModel,
+    description: 'Task list',
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Get(':id')
   @ApiParam({ name: 'id', type: String, required: true })
   getTask(@Param('id') id: string) {
@@ -58,17 +50,8 @@ export class TaskController {
    * Get tasks
    *
    */
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
-  @ApiPaginatedResponse({ model: GetTaskModel, description: 'List of tasks' })
+  @ApiPaginatedResponse({ type: GetTaskModel, description: 'List of tasks' })
+  @ApiErrorResponse()
   @Get()
   getTasks(
     @Query() paginator: PageOptionsDto,
@@ -81,21 +64,11 @@ export class TaskController {
    * Save task
    */
 
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'OK',
+  @ApiDataResponse({
+    status: HttpStatus.CREATED,
     type: ResponseMessage,
   })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid parameters',
-    type: ResponseErrorMessage,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_GATEWAY,
-    description: 'Invalid response',
-    type: ResponseErrorMessage,
-  })
+  @ApiErrorResponse()
   @Post()
   postTask(@Body(PostTaskPipe) body: PostTaskDto) {
     return this.service.postTask(body);
@@ -104,17 +77,17 @@ export class TaskController {
   /**
    * Update task
    */
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.OK,
     description: 'OK',
     type: ResponseMessage,
   })
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid parameters',
     type: ResponseErrorMessage,
   })
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.BAD_GATEWAY,
     description: 'Invalid response',
     type: ResponseErrorMessage,
@@ -131,19 +104,19 @@ export class TaskController {
   }
 
   /**
-   * Update task
+   * Delete task
    */
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.OK,
     description: 'OK',
     type: ResponseMessage,
   })
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid parameters',
     type: ResponseErrorMessage,
   })
-  @ApiResponse({
+  @ApiDataResponse({
     status: HttpStatus.BAD_GATEWAY,
     description: 'Invalid response',
     type: ResponseErrorMessage,

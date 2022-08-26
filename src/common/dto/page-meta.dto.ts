@@ -1,8 +1,4 @@
-import {
-  ApiHideProperty,
-  ApiProperty,
-  ApiPropertyOptional,
-} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { PageMetaParamsDto } from '../interfaces/ipage-meta-params';
 
 export class PageMetaDto {
