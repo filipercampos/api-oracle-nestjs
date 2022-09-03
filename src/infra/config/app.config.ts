@@ -8,12 +8,10 @@ import { ServerConfig } from './server.config';
  *
  */
 export class AppConfig {
-  env: string;
   apiMarvel: ApiConfig;
   redis: ServerConfig;
 
   constructor(config: any) {
-    this.env = process.env.ENV;
     //redis instance
     this.redis = new ServerConfig({
       name: 'REDIS',

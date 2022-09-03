@@ -1,4 +1,8 @@
-import { ApiPaginatedResponse, RequestParamId } from '@common/decorators';
+import {
+  ApiPaginatedResponse,
+  RequestParamId,
+  Roles,
+} from '@common/decorators';
 import { ApiDataResponse } from '@common/decorators/api-data-response.decorator';
 import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
 import { IdParamDto, PageDto } from '@common/dto';
@@ -40,8 +44,9 @@ export class TaskController {
     description: 'Task list',
   })
   @ApiErrorResponse()
-  @Get(':id')
   @ApiParam({ name: 'id', type: String, required: true })
+  @Roles()
+  @Get(':id')
   getTask(@Param('id') id: string) {
     return this.service.getTaskById(id);
   }
@@ -52,6 +57,7 @@ export class TaskController {
    */
   @ApiPaginatedResponse({ type: GetTaskModel, description: 'List of tasks' })
   @ApiErrorResponse()
+  @Roles()
   @Get()
   getTasks(
     @Query() paginator: PageOptionsDto,
@@ -69,6 +75,7 @@ export class TaskController {
     type: ResponseMessage,
   })
   @ApiErrorResponse()
+  @Roles()
   @Post()
   postTask(@Body(PostTaskPipe) body: PostTaskDto) {
     return this.service.postTask(body);
@@ -93,6 +100,7 @@ export class TaskController {
     type: ResponseErrorMessage,
   })
   @ApiParam({ name: 'id', description: 'Task ID', type: String })
+  @Roles()
   @Put(':id')
   putTask(
     @RequestParamId(IdParamDto)
@@ -122,6 +130,7 @@ export class TaskController {
     type: ResponseErrorMessage,
   })
   @Delete(':id')
+  @Roles()
   @ApiParam({ description: 'Task ID', name: 'id', type: String })
   deleteTask(@Param('id', DeleteTaskPipe) id: string) {
     return this.service.deleteTask(id);

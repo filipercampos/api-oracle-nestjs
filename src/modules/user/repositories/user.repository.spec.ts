@@ -1,12 +1,12 @@
 import { loadConfig } from '@infra/config/load.config';
 import { UserRepository } from './user.repository';
-//Use this env for tests
-process.env.ENV = 'local';
-//load envs
-loadConfig();
 
 describe('TDD UserRepository', () => {
   let repository: UserRepository;
+
+  beforeAll(() => {
+    loadConfig();
+  });
 
   beforeEach(() => {
     repository = new UserRepository();

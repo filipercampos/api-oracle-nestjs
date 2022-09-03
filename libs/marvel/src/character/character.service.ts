@@ -7,9 +7,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 
-import { OnHandleRequestError } from 'libs/core/interfaces/hooks/on-handle-request-error.interface';
 import { BaseService } from '../../../core/base.service';
 import { QueryParameter } from '../../../core/helpers';
+import { OnHandleRequestError } from '../../../core/interfaces/hooks/on-handle-request-error.interface';
 import { ICharacterUsecase } from './icharacter.usecases';
 import { Character } from './models/character.model';
 

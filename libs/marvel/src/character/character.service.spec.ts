@@ -6,7 +6,7 @@ import { ICharacterUsecase } from './icharacter.usecases';
 
 jest.setTimeout(99999);
 
-describe('IntermediariaService', () => {
+describe('Character Service', () => {
   let service: ICharacterUsecase;
   beforeEach(async () => {
     const module = await Test.createTestingModule({

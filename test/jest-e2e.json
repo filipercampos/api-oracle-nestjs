@@ -28,5 +28,8 @@
     "@infra": "<rootDir>/../src/infra/$1",
     "@app/marvel/(.*)": "<rootDir>/../libs/marvel/src/$1",
     "@app/marvel": "<rootDir>/../libs/marvel/src"
+  },
+  "globals": {
+    "NODE_ENV": "local"
   }
 }

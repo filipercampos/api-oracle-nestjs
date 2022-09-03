@@ -4,9 +4,11 @@ import { ApiDataResponse } from '@common/decorators/api-data-response.decorator'
 import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
 import { ResponseErrorMessage } from '@common/interfaces/response-message';
 import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { X_API_KEY } from '@shared/constants';
 import { ApiMarvelResponse } from '@shared/decorators/api-marvel-response.decorator';
 
+@ApiSecurity(X_API_KEY)
 @ApiTags('marvel')
 @Controller('marvel')
 export class CharacterController {

@@ -18,7 +18,7 @@ export abstract class BaseService {
   constructor(config: ApiConfig, private httpService: HttpService, ssl = true) {
     this.config = config;
     this._useAgent = ssl;
-    this._showLog = process.env.ENV !== 'production';
+    this._showLog = process.env.NODE_ENV !== 'production';
     this.logger = new Logger(this.constructor.name);
   }
   private logRequest(config: AxiosRequestConfig | BaseParameter) {
@@ -28,10 +28,10 @@ export abstract class BaseService {
       const params = config.params;
       const headers = config.headers;
       this.logger.log('Base URL: ' + this.config.url);
+      this.logger.log('URL: ' + JSON.stringify(url));
       if (headers) this.logger.log('Headers: ' + JSON.stringify(headers));
       if (params) this.logger.log('Query: ' + JSON.stringify(params));
       if (data) this.logger.log('Body: ' + JSON.stringify(data));
-      this.logger.log('URL: ' + JSON.stringify(url));
     }
   }
   /**

@@ -13,7 +13,7 @@ export const ApiMarvelResponse = <TModel extends Type<any>>(
   options: IPaginatedDecoratorApiResponse<TModel>,
 ) => {
   return applyDecorators(
-    ApiExtraModels(PageDto, options.type),
+    ApiExtraModels(PageDto),
     ApiOkResponse({
       status: HttpStatus.OK,
       description: options.description || 'Successfully received model list',

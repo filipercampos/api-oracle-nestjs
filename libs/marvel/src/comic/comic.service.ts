@@ -6,10 +6,10 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { BaseService } from 'libs/core/base.service';
-import { QueryParameter } from 'libs/core/helpers';
+import { BaseService } from '../../../core/base.service';
+import { QueryParameter } from '../../../core/helpers';
 
-import { OnHandleRequestError } from 'libs/core/interfaces/hooks/on-handle-request-error.interface';
+import { OnHandleRequestError } from '../../../core/interfaces/hooks/on-handle-request-error.interface';
 import { IComicUsecase } from './icomic.usecases';
 import { Comic } from './models/comic.model';
 

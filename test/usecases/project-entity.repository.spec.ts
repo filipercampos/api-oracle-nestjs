@@ -1,13 +1,12 @@
+import { loadConfig } from '@infra/config/load.config';
 import {
   ProjectMetadataType,
   ProjectOracleRepository,
 } from 'test/usecases/project-oracle.repository';
-import { loadConfig } from '@infra/config/load.config';
 
 describe('TDD ProjectRepository', () => {
   let repository: ProjectOracleRepository;
   beforeAll(() => {
-    process.env.ENV = 'local';
     loadConfig();
     repository = new ProjectOracleRepository();
   });

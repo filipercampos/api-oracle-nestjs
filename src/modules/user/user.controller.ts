@@ -65,6 +65,7 @@ export class UserController {
     type: ResponseMessage,
   })
   @ApiErrorResponse()
+  @Roles()
   @Patch()
   patchUser(@Body(PatchUserPipe) body: PatchUserDto) {
     return this.service.patchUser(body);

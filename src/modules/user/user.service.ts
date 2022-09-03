@@ -1,11 +1,11 @@
 import { RedisService } from '@common/cache/redis/redis.service';
+import { MessageDto } from '@common/dto';
 import {
   BadRequestException,
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { ERROR_DEFAULT } from '@shared/constants';
-import { MessageDto } from '@common/dto';
 import { CryptoUtil } from '@shared/utils/crypto.util';
 import { TaskRepository } from './../task/repositories/task.repository';
 import { USER_MESSAGES } from './constants/user.const';
@@ -42,13 +42,6 @@ export class UserService implements IUserUsecase {
    * Get user by email
    */
   async findByEmail(email: string): Promise<UserEntity> {
-    //cache primary
-    const cache: UserEntity = await this.redisService.get(email);
-    // exists cache
-    if (cache) {
-      //get users on cache
-      return cache;
-    }
     //get user by email
     const users = await this.repository.findUsers({ email } as GetUserDto);
     //check has data

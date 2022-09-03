@@ -56,7 +56,7 @@ export class FilterExceptionInterceptor implements ExceptionFilter {
       HttpStatus.INTERNAL_SERVER_ERROR,
     ];
     let exceptionCode: number;
-    if (statusLogger.includes(status)) {
+    if (statusLogger.includes(status) || status) {
       this.logger.error(
         `Request: ${request.url}, status: ${status}, error: ${JSON.stringify(
           error,

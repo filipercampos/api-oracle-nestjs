@@ -6,7 +6,7 @@ import { IComicUsecase } from './icomic.usecases';
 
 jest.setTimeout(99999);
 
-describe('IntermediariaService', () => {
+describe('Comic Service', () => {
   let service: IComicUsecase;
   beforeEach(async () => {
     const module = await Test.createTestingModule({

@@ -5,4 +5,4 @@ export const ROLES_KEY = 'roles';
  * Roles decorator
  */
 export const Roles = (...roles: ProfileRoleEnum[]) =>
-  SetMetadata(ROLES_KEY, roles);
+  SetMetadata(ROLES_KEY, roles.length == 0 ? ProfileRoleEnum.DEFAULT : roles);

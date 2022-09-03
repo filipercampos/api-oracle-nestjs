@@ -21,7 +21,7 @@ async function bootstrap() {
   //start app
   await app.listen(process.env.PORT, () =>
     logger.log(
-      `API running port ${process.env.PORT} environment: ${process.env.ENV} `,
+      `API running port ${process.env.PORT} environment: ${process.env.NODE_ENV} `,
     ),
   );
 }

@@ -315,14 +315,14 @@ export abstract class BaseOracleMetadata implements OracleEntityMetadata {
       const values = BaseOracleMetadata.extractCriteriaValues(params.value);
       const sql = `SELECT ${fieldsName}, ${totalCountField} FROM ${this.tableName.toUpperCase()} \nWHERE ${
         params.whereOptions
-      }${top}`;
+      }`;
       //set statement
       binds.sql = sql;
       binds.bindParams = values;
     } else {
       //sql native
       const whereOptions = BaseOracleMetadata.extractCriteriaNative(params);
-      const sql = `SELECT ${fieldsName}, ${totalCountField} FROM ${this.tableName.toUpperCase()} \nWHERE ${whereOptions}${top}`;
+      const sql = `SELECT ${fieldsName}, ${totalCountField} FROM ${this.tableName.toUpperCase()} \nWHERE ${whereOptions}`;
       //set statement
       binds.sql = sql;
     }

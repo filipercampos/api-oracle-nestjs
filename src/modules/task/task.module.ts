@@ -16,5 +16,13 @@ import { TaskService } from './task.service';
     },
     TaskRepository,
   ],
+  exports: [
+    TaskService,
+    {
+      provide: ITaskUsecase,
+      useClass: TaskService,
+    },
+    TaskRepository,
+  ],
 })
 export class TaskModule {}

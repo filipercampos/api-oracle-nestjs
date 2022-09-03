@@ -4,7 +4,6 @@ const tableName = 'ibp100.task_test';
 describe('TDD  Script over TaskEntityRepository', () => {
   let repository: TaskOracleRepository;
   beforeAll(() => {
-    process.env.ENV = 'local';
     loadConfig();
     repository = new TaskOracleRepository();
   });

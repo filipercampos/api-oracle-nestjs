@@ -1,7 +1,7 @@
 import { OraclePaginationType } from '@common/data/interfaces/ioracle.parameter';
 import { MessageDto, PageDto, PageMetaDto } from '@common/dto';
 import { PageOptionsDto } from '@common/dto/page-options.dto';
-import { handleEntity } from '@global';
+import { handleEntity } from '@global/index';
 import { Injectable } from '@nestjs/common';
 import { ERROR_DEFAULT } from '@shared/constants';
 import { TASK_MESSAGES } from './constants/task.const';

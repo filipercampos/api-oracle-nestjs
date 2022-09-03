@@ -2,9 +2,10 @@ import { IComicUsecase } from '@app/marvel/comic/icomic.usecases';
 import { Comic } from '@app/marvel/comic/models/comic.model';
 import { ApiErrorResponse } from '@common/decorators/api-error-response.decorator';
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { ApiMarvelResponse } from '@shared/decorators/api-marvel-response.decorator';
-
+import { X_API_KEY } from './../../../shared/constants';
+@ApiSecurity(X_API_KEY)
 @ApiTags('marvel')
 @Controller('marvel')
 export class ComicController {

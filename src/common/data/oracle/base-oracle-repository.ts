@@ -38,7 +38,7 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
     this.primaryKeyName = metadata.primaryKeyName.name.toUpperCase();
     this.logger = new Logger(this.constructor.name);
     this.connectionFactory = new OracleConnectionFactory();
-    this._showLog = process.env.ENV === 'local';
+    this._showLog = process.env.NODE_ENV === 'local';
     this.mapperEntity = mapper;
     this.metadata = metadata;
     this.loggerOracle = new LoggerOracle(this.logger, this._showLog);
@@ -150,6 +150,9 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
     },
   ): Promise<IOracleResults<T>> {
     this.log('find');
+    if (!pagination || Object.keys(pagination).length == 0) {
+      throw new Error('pagination is required');
+    }
     const connection = await this.openConnection();
     //build query pagination
     const query = this.metadata.createCriteriaOffset(
@@ -363,9 +366,9 @@ export class BaseOracleRepository<T, M> implements IRepository<T, M> {
   /**
    * Close connection
    */
-  protected closeConnection(): Promise<void> {
+  protected async closeConnection(): Promise<void> {
     try {
-      return this.connection?.close();
+      return await this.connection?.close();
     } catch (error) {
       this.handleError(error, 'closeConnection');
     }
