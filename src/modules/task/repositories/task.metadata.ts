@@ -18,7 +18,7 @@ export class TaskMetadata extends BaseOracleMetadata {
   // owner.tableName
   // owner = app001
   // table = api001_tsk
-  tableName = 'app001.api001_tsk';
+  tableName = 'API001_TSK';
   primaryKeyName = {
     name: 'TSK_ID',
     type: 'string',
