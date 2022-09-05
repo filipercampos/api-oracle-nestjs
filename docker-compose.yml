@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  redis:
+    container_name: redis
+    image: redis:7.0.4-alpine
+    restart: always    
+    command: redis-server --save 20 1 --loglevel warning --requirepass r123 --appendonly yes
+    ports:
+      - "6379:6379"        
+    volumes: 
+      - cache:/data
+  api:
+    container_name: api
+    image: api-oracle-nestjs
+    build:
+      dockerfile: Dockerfile
+      context: .
+    restart: unless-stopped
+    command: npm start
+    ports:
+      - "3000:3000"        
+    environment:
+      TZ: America/Sao_Paulo
+      NODE_ENV: production
+      # issue is that redis is "variable" that will be interpolated
+      REDIS_HOST: redis
+      # docker oracle image
+      ORACLE_HOST: 0.0.0.0
+    links:
+      - redis
+volumes:
+  cache:
+    driver: local       

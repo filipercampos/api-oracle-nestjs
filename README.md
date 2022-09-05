@@ -39,20 +39,14 @@ $ npm run test:cov
 ```
 
 ## Oracle 
-This project uses oracle 18 xe and 
-
-https://github.com/oracle/docker-images/tree/main/OracleDatabase/SingleInstance/dockerfiles/18.4.0
-
-For container use ORACLE_HOST=0.0.0.0
+This project uses oracle 21 xe 
 ```bash
-$ cd Downloads/OracleDatabase/SingleInstance/dockerfiles
-./buildContainerImage.sh -v 18.4.0 -x
+# get image
+$ docker pull gvenzl/oracle-xe:21-full
 
 # build oracle image and detached (it gonna take while)
-$ docker run -i -t -d --hostname ora18xe --name ora18xe -p 1521:1521 -v ~/Docker/shared/:/shared oracle/database:18.4.0-xe
+$ docker run -d -p 1521:1521 --name ora21cFull -e ORACLE_PASSWORD=SysPassword1 -v oracle-volume:/opt/oracle/XEORA21CFull/oradata gvenzl/oracle-xe
 
-# get user's password system from output
-$ docker logs ora18xe -f
 ```
 
 ## Redis
@@ -83,14 +77,20 @@ $ docker run -it api-app001 sh
 # Docker notes
 
 Docker as default use directory name as main node example:
-```
+```bash
+# docker three
  api-oracle-nestjs
  + api
  + redis
-```
 
+# connect oracle database use container ip
+$ docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' container_name_or_id
+```
 # Conclusion
 This project presents many stuffs about: API Rest, design pattern,microservices, good practices, clean architecture and docker.
 
-We saw how to use Redis with docker and the with docker-compose. We also added Redis as a cache to an existing NestJS API and witnessed the performance benefits.
+I demonstrated a lot bunch of stuff about oracle database and build my own typeorm
+
+We also saw how to use Redis with docker and the with docker-compose. We also added Redis as a cache to an existing NestJS API and witnessed the performance benefits.
+
 

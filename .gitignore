@@ -44,3 +44,5 @@ tmp
 temp
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
+gen
+instantclient_21_6
