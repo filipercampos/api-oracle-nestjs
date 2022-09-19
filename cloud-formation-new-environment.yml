@@ -26,9 +26,9 @@ Mappings:
       hml: x
       dev: x
     ElasticApmUrl:
-      prd: https://x.apm.us-east-1.aws.cloud.es.io:443
-      hml: https://x.apm.us-east-1.aws.cloud.es.io:443
-      dev: https://x.apm.us-east-1.aws.cloud.es.io:443
+      prd: https://x.apm.region.aws.cloud.es.io:port
+      hml: https://x.apm.region.aws.cloud.es.io:port
+      dev: https://x.apm.region.aws.cloud.es.io:port
     ElasticApmSecret:
       prd: 1x
       hml: 1x
@@ -159,7 +159,7 @@ Resources:
                     [
                       "arn:aws:execute-api:",
                       !Ref "AWS::Region",
-                      ":585074645714:*/*/*",
+                      ":account_id:*/*/*",
                     ],
                   ],
               },
@@ -173,7 +173,7 @@ Resources:
                     [
                       "arn:aws:execute-api:",
                       !Ref "AWS::Region",
-                      ":585074645714:*/*/*",
+                      ":account_id:*/*/*",
                     ],
                   ],
                 "Condition":
