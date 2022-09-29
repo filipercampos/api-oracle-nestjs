@@ -73,7 +73,7 @@ $ docker-compose up -d
 # run shell image
 $ docker run -it api-app001 sh
 
-# run commaind insdide container running
+# run command insdide container running
 docker exec -u 0 -it container_id sh
 ```
 

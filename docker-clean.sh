@@ -8,5 +8,8 @@ docker rmi -f $(docker images -aq)
 # To delete all volumes using the following command: 
 docker volume rm $(docker volume ls -qf dangling=true)
 
+# To delete all image no tagged
+docker rmi $(docker images -f "dangling=true" -q)
+
 # delete everything
 docker system prune -a --volumes

@@ -24,7 +24,7 @@ Parameters:
     Type: Number
   ImageName:
     Type: String
-  StackNameNlbAndCluster:
+  StackNameAndCluster:
     Type: String
 Mappings:
   Environment:
@@ -131,7 +131,7 @@ Resources:
       LoadBalancerArn:
         'Fn::ImportValue': !Join
           - '-'
-          - - !Ref StackNameNlbAndCluster
+          - - !Ref StackNameAndCluster
             - 'LoadBalancerArn'
       Port: !Ref ListenerPort
       Protocol: TCP
@@ -233,7 +233,7 @@ Resources:
       Cluster:
         'Fn::ImportValue': !Join
           - '-'
-          - - !Ref StackNameNlbAndCluster
+          - - !Ref StackNameAndCluster
             - 'ClusterName'
       DeploymentConfiguration:
         MaximumPercent: 200
@@ -270,7 +270,7 @@ Resources:
         - ClusterName:
             'Fn::ImportValue': !Join
               - '-'
-              - - !Ref StackNameNlbAndCluster
+              - - !Ref StackNameAndCluster
                 - 'ClusterName'
           ServiceName: !GetAtt Service.Name
       ScalableDimension: ecs:service:DesiredCount

@@ -26,9 +26,9 @@ Mappings:
       hml: x
       dev: x
     ElasticApmUrl:
-      prd: https://x.apm.region.aws.cloud.es.io:port
-      hml: https://x.apm.region.aws.cloud.es.io:port
-      dev: https://x.apm.region.aws.cloud.es.io:port
+      prd: https://url
+      hml: https://url
+      dev: https://url
     ElasticApmSecret:
       prd: 1x
       hml: 1x
