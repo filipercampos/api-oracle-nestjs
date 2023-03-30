@@ -7,7 +7,7 @@ Globals:
 Parameters:
   ApplicationBaseName:
     Type: String
-    Default: digital-core
+    Default: flp
   Environment:
     Type: String
     Default: hml
